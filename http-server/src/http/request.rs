@@ -3,22 +3,23 @@ use super::method::{Method, MethodError};
 use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
-use std::mem::uninitialized;
 use std::str;
 use std::str::Utf8Error;
-use crate::http::{method, request};
+use super::{QueryString};
 
-pub struct Request {
-    path: String,
-    query_string: Option<String>,
+#[derive(Debug)]
+pub struct Request<'buf> {
+    path: &'buf str,
+    query_string: Option<QueryString<'buf>>,
     method: Method,
 }
 
 // We use a byte slice &[u8] because we don't know the length of the array
-impl TryFrom<&[u8]> for Request {
+// we have to specify the lifetime of the buffer to avoid null pointers
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(buf: &'buf [u8]) -> Result<Self, Self::Error> {
         // Variants for error handling
         // match str::from_utf8(buf) {
         //     Ok(request) => {},
@@ -61,11 +62,15 @@ impl TryFrom<&[u8]> for Request {
         // }
 
         if let Some(i) = path.find('?') {
-            query_string = Some(&path[i+1..]);
+            query_string = Some(QueryString::from(&path[i+1..]));
             path = &path[..i];
         }
 
-        unimplemented!()
+        Ok(Self {
+            path,
+            query_string,
+            method,
+        })
     }
 }
 
