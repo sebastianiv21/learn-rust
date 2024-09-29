@@ -14,6 +14,20 @@ pub struct Request<'buf> {
     method: Method,
 }
 
+impl<'buf> Request<'buf> {
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+
+    pub fn method(&self) -> &Method {
+        &self.method
+    }
+
+    pub fn query_string(&self) -> Option<&QueryString> {
+        self.query_string.as_ref()
+    }
+}
+
 // We use a byte slice &[u8] because we don't know the length of the array
 // we have to specify the lifetime of the buffer to avoid null pointers
 impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
