@@ -1,7 +1,17 @@
-use crate::http::Request; // crate is the root of the project
+use crate::http::{ParseError, Request, Response, StatusCode}; // crate is the root of the project
 use std::convert::TryFrom;
-use std::io::Read;
+use std::io::{Write, Read};
 use std::net::TcpListener;
+
+pub trait Handler {
+    fn handle_request(&mut self, request: &Request) -> Response;
+
+    // this is a default implementation, can be overwritten
+    fn handle_bad_request(&mut self, e: &ParseError) -> Response {
+        println!("Failed to parse request: {}", e);
+        Response::new(StatusCode::BadRequest, None)
+    }
+}
 
 pub struct Server {
     addr: String,
@@ -18,7 +28,7 @@ impl Server {
     // to use attributes from a struct in a method, you have to use self as the first parameter
     // the function will take ownership of the struct, so the struct will be deallocated
     // when the function ends, if you want to prevent that, you should use a reference or mutable reference
-    pub fn run(self) {
+    pub fn run(self, mut handler: impl Handler) {
         println!("Listening on {}", self.addr);
 
         let listener = TcpListener::bind(&self.addr).unwrap();
@@ -31,11 +41,13 @@ impl Server {
                         Ok(_) => {
                             println!("Received a request: {}", String::from_utf8_lossy(&buffer));
 
-                            match Request::try_from(&buffer[..]) { // equivalent to &buffer as &[u8]
-                                Ok(request) => {
-                                    dbg!(request);
-                                },
-                                Err(e) => println!("Failed to parse a request: {}", e),
+                            let response = match Request::try_from(&buffer[..]) { // equivalent to &buffer as &[u8]
+                                Ok(request) => handler.handle_request(&request),
+                                Err(e) => handler.handle_bad_request(&e),
+                            };
+
+                            if let Err(e) = response.send(&mut stream) {
+                                println!("Failed to send response: {}", e);
                             }
                         },
                         Err(e) => println!("Failed to read from connection: {}", e),
