@@ -72,11 +72,17 @@ fn add_random_fruits(fruits: &mut Vec<String>, qty: i32) {
 
     let mut rng = thread_rng();
 
-    let mut random_other_fruits = Vec::new();
-    for _ in 0..qty {
-        let rand_fruit = other_fruits.choose(&mut rng).unwrap().to_string();
-        random_other_fruits.push(rand_fruit);
-    }
+    // let mut random_other_fruits = Vec::new();
+    // for _ in 0..qty {
+    //     let rand_fruit = other_fruits.choose(&mut rng).unwrap().to_string();
+    //     random_other_fruits.push(rand_fruit);
+    // }
+
+    // alternative
+    // Select `qty` random fruits and add them to the salad
+    let random_other_fruits: Vec<String> = (0..qty)
+        .filter_map(|_| other_fruits.choose(&mut rng).cloned())
+        .collect();
 
     fruits.extend(random_other_fruits);
     // alternative

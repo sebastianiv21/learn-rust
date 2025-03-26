@@ -21,8 +21,9 @@ fn count_frequency(numbers: Vec<i32>) -> Vec<(i32, i32)> {
 
     result
 }
+
 fn main() {
-    let numbers = vec![1,2,3,2,1,2,3,4,5,4,4,3,2];
+    let numbers = vec![1, 2, 3, 2, 1, 2, 3, 4, 5, 4, 4, 3, 2];
     let result = count_frequency(numbers);
 
     println!("The result is {result:?}");

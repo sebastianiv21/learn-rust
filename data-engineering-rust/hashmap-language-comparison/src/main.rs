@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use chrono::{Datelike, Local};
+use std::collections::HashMap;
 
-fn init_languages() -> HashMap<String, i32>{
+fn init_languages() -> HashMap<String, i32> {
     let mut languages = HashMap::new();
 
     languages.insert("JavaSript".to_string(), 1995);
@@ -13,7 +13,7 @@ fn init_languages() -> HashMap<String, i32>{
     languages
 }
 
-fn calculate_weights(years_active: &mut HashMap<String, i32>) -> HashMap<String, i32>{
+fn calculate_weights(years_active: &mut HashMap<String, i32>) -> HashMap<String, i32> {
     // Subtract the creation year from the current year to get the number of years active
     let current_year = Local::now().year();
     for year in years_active.values_mut() {
