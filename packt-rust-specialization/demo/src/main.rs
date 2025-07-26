@@ -1,12 +1,18 @@
-fn main() {
-    let mut my_string = String::from("My name is Luis");
-    println!("{}", my_string);
-    my_string.push_str("inho");
-    println!("{}", my_string);
-    my_string.pop();
-    println!("{}", my_string);
+pub fn factorial(n: u32) -> u32 {
+    if n == 0 {
+        return 1;
+    }
+    let mut res = 1;
+    for x in 1..=n {
+        dbg!(x);
+        dbg!(res);
+        res *= x;
+    }
+    dbg!(res);
+    res
+}
 
-    let ma = [1, 2, 3, 4, 5];
-    println!("{}", ma.len());
-    println!("{:?}", ma.get(2));
+fn main() {
+    let result = factorial(5);
+    dbg!(result);
 }

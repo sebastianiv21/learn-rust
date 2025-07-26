@@ -1,0 +1,27 @@
+{
+  "cards": {
+    "2": {
+      "id": 2,
+      "question": "Capital of France?",
+      "answer": "Paris",
+      "metadata": {
+        "difficulty": "Medium",
+        "times_reviewed": 0,
+        "correct_count": 0,
+        "last_reviewed": null
+      }
+    },
+    "1": {
+      "id": 1,
+      "question": "What is 2 + 2?",
+      "answer": "4",
+      "metadata": {
+        "difficulty": "Medium",
+        "times_reviewed": 0,
+        "correct_count": 0,
+        "last_reviewed": null
+      }
+    }
+  },
+  "next_id": 3
+}
