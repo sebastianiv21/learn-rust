@@ -1,36 +1,25 @@
 {
   "cards": {
-    "2": {
-      "id": 2,
-      "question": "Capital of France?",
-      "answer": "Paris",
-      "metadata": {
-        "difficulty": "Hard",
-        "times_reviewed": 1,
-        "correct_count": 0,
-        "last_reviewed": "2025-07-26"
-      }
-    },
     "1": {
       "id": 1,
       "question": "What is 2 + 2?",
       "answer": "4",
       "metadata": {
-        "difficulty": "Easy",
-        "times_reviewed": 1,
-        "correct_count": 1,
-        "last_reviewed": "2025-07-26"
+        "difficulty": "Medium",
+        "times_reviewed": 0,
+        "correct_count": 0,
+        "last_reviewed": null
       }
     },
-    "3": {
-      "id": 3,
-      "question": "What is Rust?",
-      "answer": "A systems programming language",
+    "2": {
+      "id": 2,
+      "question": "Capital of France?",
+      "answer": "Paris",
       "metadata": {
         "difficulty": "Medium",
-        "times_reviewed": 1,
-        "correct_count": 1,
-        "last_reviewed": "2025-07-26"
+        "times_reviewed": 0,
+        "correct_count": 0,
+        "last_reviewed": null
       }
     }
   },

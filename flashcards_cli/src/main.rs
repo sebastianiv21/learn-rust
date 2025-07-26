@@ -30,6 +30,18 @@ enum Commands {
     Quiz,
     /// List all flashcards
     List,
+    /// View a specific flashcard by ID
+    View {
+        /// The ID of the flashcard to view
+        id: u32,
+    },
+    /// Delete a flashcard by ID
+    Delete {
+        /// The Id of the flashcard to delete
+        id: u32,
+    },
+    /// Reset all card stadistics
+    Reset,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -94,6 +106,20 @@ impl FlashcardDeck {
         }
     }
 
+    pub fn delete_card(&mut self, card_id: u32) -> bool {
+        self.cards.remove(&card_id).is_some()
+    }
+
+    pub fn get_card(&self, card_id: u32) -> Option<&Flashcard> {
+        self.cards.get(&card_id)
+    }
+
+    pub fn reset_all_stats(&mut self) {
+        for card in self.cards.values_mut() {
+            card.metadata = CardMetadata::default();
+        }
+    }
+
     pub fn get_random_cards_ids(&self) -> Vec<u32> {
         let mut cards_ids: Vec<u32> = self.cards.keys().copied().collect();
         let mut rng = rand::rng();
@@ -146,9 +172,63 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("No flashcards found. Add some with 'flashcard add <question> <answer>'");
             } else {
                 println!("Flashcards in deck ({}):", deck.cards.len());
-                for card in deck.cards.values() {
-                    println!("#{}: {} -> {}", card.id, card.question, card.answer);
+
+                let mut cards: Vec<&Flashcard> = deck.cards.values().collect();
+                cards.sort_by_key(|card| card.id);
+                // for card in deck.cards.values() {
+                //     println!("#{}: {} -> {}", card.id, card.question, card.answer);
+                // }
+                for card in cards {
+                    let success_rate = if card.metadata.times_reviewed > 0 {
+                        (card.metadata.correct_count as f64 / card.metadata.times_reviewed as f64)
+                            * 100.0
+                    } else {
+                        0.0
+                    };
+
+                    let difficulty_emoji = match card.metadata.difficulty {
+                        Difficulty::Easy => "🟢",
+                        Difficulty::Medium => "🟡",
+                        Difficulty::Hard => "🔴",
+                    };
+
+                    println!(
+                        "#{} {} [{}] Success: {:.0}% ({}/{})",
+                        card.id,
+                        difficulty_emoji,
+                        format!("{:.30}", card.question).trim(),
+                        success_rate,
+                        card.metadata.correct_count,
+                        card.metadata.times_reviewed
+                    );
+
+                    if card.metadata.times_reviewed > 0 {
+                        println!(
+                            "    Last reviewed: {}",
+                            card.metadata
+                                .last_reviewed
+                                .as_ref()
+                                .unwrap_or(&"Never".to_string())
+                        );
+                    }
+                    println!();
                 }
+
+                // Print deck stadistics
+                let total_reviews: u32 =
+                    deck.cards.values().map(|c| c.metadata.times_reviewed).sum();
+                let total_correct: u32 =
+                    deck.cards.values().map(|c| c.metadata.correct_count).sum();
+                let overall_success = if total_reviews > 0 {
+                    (total_correct as f64 / total_reviews as f64) * 100.0
+                } else {
+                    0.0
+                };
+
+                println!("📈 Deck Statistics:");
+                println!("   Total cards: {}", deck.cards.len());
+                println!("   Total reviews: {}", total_reviews);
+                println!("   Overall success rate: {:.1}%", overall_success);
             }
         }
         Commands::Quiz => {
@@ -157,6 +237,70 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 run_quiz(&mut deck)?;
                 deck.save_to_file(&cli.file)?;
+            }
+        }
+        Commands::View { id } => match deck.get_card(*id) {
+            Some(card) => {
+                println!("📄 Flashcard #{}:", card.id);
+                println!("❓ Question: {}", card.question);
+                println!("💡 Answer: {}", card.answer);
+                println!();
+
+                let difficulty_emoji = match card.metadata.difficulty {
+                    Difficulty::Easy => "🟢 Easy",
+                    Difficulty::Medium => "🟡 Medium",
+                    Difficulty::Hard => "🔴 Hard",
+                };
+                println!("📊 Statistics:");
+                println!("   Difficulty: {}", difficulty_emoji);
+                println!("   Times reviewed: {}", card.metadata.times_reviewed);
+                println!("   Correct answers: {}", card.metadata.correct_count);
+
+                if card.metadata.times_reviewed > 0 {
+                    let success_rate = (card.metadata.correct_count as f64
+                        / card.metadata.times_reviewed as f64)
+                        * 100.0;
+                    println!("   Success rate: {:.1}%", success_rate);
+                    println!(
+                        "   Last reviewed: {}",
+                        card.metadata
+                            .last_reviewed
+                            .as_ref()
+                            .unwrap_or(&"Never".to_string())
+                    );
+                } else {
+                    println!("   Success rate: Not yet reviewed");
+                }
+            }
+            None => {
+                println!("❌ Flashcard #{} not found.", id);
+            }
+        },
+        Commands::Delete { id } => {
+            if deck.delete_card(*id) {
+                deck.save_to_file(&cli.file)?;
+                println!("🗑️  Deleted flashcard #{}", id);
+            } else {
+                println!("❌ Flashcard #{} not found.", id);
+            }
+        }
+        Commands::Reset => {
+            if deck.cards.is_empty() {
+                println!("❌ No flashcards to reset.");
+            } else {
+                print!("⚠️  Are you sure you want to reset all statistics? This cannot be undone. (y/N): ");
+                io::stdout().flush().unwrap();
+
+                let mut input = String::new();
+                io::stdin().read_line(&mut input)?;
+
+                if input.trim().to_lowercase() == "y" {
+                    deck.reset_all_stats();
+                    deck.save_to_file(&cli.file)?;
+                    println!("🔄 Reset all flashcard statistics.");
+                } else {
+                    println!("❌ Reset cancelled.");
+                }
             }
         }
     }
