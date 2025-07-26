@@ -1,0 +1,16 @@
+{
+  "cards": {
+    "1": {
+      "id": 1,
+      "question": "2+2?",
+      "answer": "4",
+      "metadata": {
+        "difficulty": "Easy",
+        "times_reviewed": 1,
+        "correct_count": 1,
+        "last_reviewed": "2025-07-26"
+      }
+    }
+  },
+  "next_id": 2
+}
